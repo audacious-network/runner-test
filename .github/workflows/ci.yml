@@ -18,7 +18,7 @@ jobs:
       -
         name: start runner
         id: start-runner
-        uses: audacious-network/aws-github-runner@v1.0.13
+        uses: audacious-network/aws-github-runner@v1.0.14
         with:
           mode: start
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
@@ -63,7 +63,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       -
         name: stop runner
-        uses: audacious-network/aws-github-runner@v1.0.13
+        uses: audacious-network/aws-github-runner@v1.0.14
         with:
           mode: stop
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
