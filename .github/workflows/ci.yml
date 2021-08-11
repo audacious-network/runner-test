@@ -28,6 +28,8 @@ jobs:
           aws-image-search-owners: '["099720109477"]' # canonical
           aws-instance-username: grenade
           aws-instance-ssh-public-key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+          aws-subnet-id: subnet-08c26caf0a52b7c19
+          aws-security-group-id: sgr-00f1d77e2e4cf120d
           aws-resource-tags: >
             [
               {
