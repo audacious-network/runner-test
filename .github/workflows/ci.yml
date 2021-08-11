@@ -2,11 +2,12 @@ name: do-the-job
 on: push
 jobs:
   start-runner:
-    name: start self-hosted aws runner
+    name: start runner
     runs-on: ubuntu-latest
     outputs:
-      label: ${{ steps.start-aws-runner.outputs.label }}
-      aws-instance-id: ${{ steps.start-aws-runner.outputs.aws-instance-id }}
+      runner-label: ${{ steps.start-runner.outputs.runner-label }}
+      aws-region: ${{ steps.start-runner.outputs.aws-region }}
+      aws-instance-id: ${{ steps.start-runner.outputs.aws-instance-id }}
     steps:
       -
         uses: aws-actions/configure-aws-credentials@v1
@@ -16,8 +17,8 @@ jobs:
           aws-region: us-east-1
       -
         name: start runner
-        id: start-aws-runner
-        uses: audacious-network/aws-github-runner@v1.0.9
+        id: start-runner
+        uses: audacious-network/aws-github-runner@v1.0.10
         with:
           mode: start
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
@@ -42,13 +43,13 @@ jobs:
   do-the-job:
     name: do the job on the runner
     needs: start-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+    runs-on: ${{ needs.start-runner.outputs.runner-label }} # run the job on the newly created runner
     steps:
       -
         name: hello world
         run: echo 'hello world!'
   stop-runner:
-    name: stop self-hosted aws runner
+    name: stop runner
     needs:
       - start-runner # required to get output from the start-runner job
       - do-the-job # required to wait when the main job is done
@@ -62,10 +63,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       -
         name: stop runner
-        uses: audacious-network/aws-github-runner@v1.0.9
+        uses: audacious-network/aws-github-runner@v1.0.10
         with:
           mode: stop
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          label: ${{ needs.start-runner.outputs.label }}
-          aws-region: us-east-1
+          runner-label: ${{ needs.start-runner.outputs.runner-label }}
+          aws-region: ${{ needs.start-runner.outputs.aws-region }}
           aws-instance-id: ${{ needs.start-runner.outputs.aws-instance-id }}
