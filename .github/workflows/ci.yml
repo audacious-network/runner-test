@@ -2,11 +2,11 @@ name: do-the-job
 on: push
 jobs:
   start-runner:
-    name: start self-hosted ec2 runner
+    name: start self-hosted aws runner
     runs-on: ubuntu-latest
     outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+      label: ${{ steps.start-aws-runner.outputs.label }}
+      aws-instance-id: ${{ steps.start-aws-runner.outputs.aws-instance-id }}
     steps:
       -
         uses: aws-actions/configure-aws-credentials@v1
@@ -16,16 +16,16 @@ jobs:
           aws-region: us-east-1
       -
         name: start runner
-        id: start-ec2-runner
-        uses: audacious-network/ec2-github-runner@v2
+        id: start-aws-runner
+        uses: audacious-network/aws-github-runner@v2
         with:
           mode: start
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          ec2-region: us-east-1
-          ec2-instance-type: t3.nano
-          ec2-instance-lifecycle: spot
-          ec2-image-search-pattern: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*
-          ec2-image-search-owners: '["099720109477"]' # canonical
+          aws-region: us-east-1
+          aws-instance-type: t3.nano
+          aws-instance-lifecycle: spot
+          aws-image-search-pattern: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*
+          aws-image-search-owners: '["099720109477"]' # canonical
           aws-resource-tags: >
             [
               {
@@ -46,7 +46,7 @@ jobs:
         name: hello world
         run: echo 'hello world!'
   stop-runner:
-    name: stop self-hosted ec2 runner
+    name: stop self-hosted aws runner
     needs:
       - start-runner # required to get output from the start-runner job
       - do-the-job # required to wait when the main job is done
@@ -60,10 +60,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       -
         name: stop runner
-        uses: audacious-network/ec2-github-runner@v2
+        uses: audacious-network/aws-github-runner@v2
         with:
           mode: stop
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           label: ${{ needs.start-runner.outputs.label }}
-          ec2-region: us-east-1
-          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
+          aws-region: us-east-1
+          aws-instance-id: ${{ needs.start-runner.outputs.aws-instance-id }}
