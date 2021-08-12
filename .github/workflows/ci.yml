@@ -2,19 +2,41 @@ name: do-the-job
 on: push
 jobs:
 
-  run-job-a:
-    needs: start-runner-a
-    runs-on: ${{ needs.start-runner-a.outputs.runner-label }}
-    steps:
-      -
-        run: echo 'hello from job a'
+  #create-matrix:
+  #  runs-on: ubuntu-latest
+  #  outputs:
+  #    matrix: ${{ steps.set-includes.outputs.matrix }}
+  #  steps:
+  #  - id: set-includes
+  #    run: echo "::set-output name=matrix::{\"runtime\":[\"a\",\"b\"],\"include\":[{\"runtime\":\"a\",\"needs\":\"start-runner-a\",\"runs-on\":\"needs.start-runner-a.outputs.runner-label\"},{\"runtime\":\"b\",\"needs\":\"start-runner-b\",\"runs-on\":\"needs.start-runner-b.outputs.runner-label\"}]}"
 
-  run-job-b:
-    needs: start-runner-b
-    runs-on: ${{ needs.start-runner-b.outputs.runner-label }}
+
+  #run-job-a:
+  #  needs: start-runner-a
+  #  runs-on: ${{ needs.start-runner-a.outputs.runner-label }}
+  #  steps:
+  #    -
+  #      run: echo 'hello from job a'
+
+  #run-job-b:
+  #  needs: start-runner-b
+  #  runs-on: ${{ needs.start-runner-b.outputs.runner-label }}
+  #  steps:
+  #    -
+  #      run: echo 'hello from job b'
+
+  run-job:
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime:
+          - a
+          - b
+    needs: start-runner-${{ matrix.runtime }}
+    runs-on: needs.start-runner-${{ matrix.runtime }}.outputs.runner-label
     steps:
       -
-        run: echo 'hello from job b'
+        run: echo 'hello from job ${{ matrix.runtime }}'
 
   start-runner-a:
     runs-on: ubuntu-latest
@@ -40,7 +62,7 @@ jobs:
   stop-runner-a:
     needs:
       - start-runner-a
-      - run-job-a
+      - run-job
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
@@ -79,7 +101,7 @@ jobs:
   stop-runner-b:
     needs:
       - start-runner-b
-      - run-job-b
+      - run-job
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
