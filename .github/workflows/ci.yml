@@ -1,7 +1,22 @@
 name: do-the-job
 on: push
 jobs:
-  start-runner:
+
+  run-job-a:
+    needs: start-runner
+    runs-on: ${{ needs.start-runner-a.outputs.runner-label }}
+    steps:
+      -
+        run: echo 'hello from job a'
+
+  run-job-b:
+    needs: start-runner
+    runs-on: ${{ needs.start-runner-b.outputs.runner-label }}
+    steps:
+      -
+        run: echo 'hello from job b'
+
+  start-runner-a:
     runs-on: ubuntu-latest
     outputs:
       runner-label: ${{ steps.start-runner.outputs.runner-label }}
@@ -13,7 +28,7 @@ jobs:
         uses: audacious-network/aws-github-runner@v1.0.17
         with:
           mode: start
-          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          github-token: ${{ secrets.GH_SHR_TOKEN }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
@@ -21,16 +36,11 @@ jobs:
           aws-instance-lifecycle: spot
           aws-image-search-pattern: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*
           aws-image-search-owners: '["099720109477"]' # canonical
-  do-the-job:
-    needs: start-runner
-    runs-on: ${{ needs.start-runner.outputs.runner-label }}
-    steps:
-      -
-        run: echo 'hello world!'
-  stop-runner:
+
+  stop-runner-a:
     needs:
-      - start-runner
-      - do-the-job
+      - start-runner-a
+      - run-job-a
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
@@ -38,9 +48,48 @@ jobs:
         uses: audacious-network/aws-github-runner@v1.0.17
         with:
           mode: stop
-          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          github-token: ${{ secrets.GH_SHR_TOKEN }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ needs.start-runner.outputs.aws-region }}
-          runner-label: ${{ needs.start-runner.outputs.runner-label }}
-          aws-instance-id: ${{ needs.start-runner.outputs.aws-instance-id }}
+          aws-region: ${{ needs.start-runner-a.outputs.aws-region }}
+          runner-label: ${{ needs.start-runner-a.outputs.runner-label }}
+          aws-instance-id: ${{ needs.start-runner-a.outputs.aws-instance-id }}
+
+  start-runner-b:
+    runs-on: ubuntu-latest
+    outputs:
+      runner-label: ${{ steps.start-runner.outputs.runner-label }}
+      aws-region: ${{ steps.start-runner.outputs.aws-region }}
+      aws-instance-id: ${{ steps.start-runner.outputs.aws-instance-id }}
+    steps:
+      -
+        id: start-runner
+        uses: audacious-network/aws-github-runner@v1.0.17
+        with:
+          mode: start
+          github-token: ${{ secrets.GH_SHR_TOKEN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          aws-instance-type: t3.nano
+          aws-instance-lifecycle: spot
+          aws-image-search-pattern: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*
+          aws-image-search-owners: '["099720109477"]' # canonical
+
+  stop-runner-b:
+    needs:
+      - start-runner-b
+      - run-job-b
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      -
+        uses: audacious-network/aws-github-runner@v1.0.17
+        with:
+          mode: stop
+          github-token: ${{ secrets.GH_SHR_TOKEN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ needs.start-runner-b.outputs.aws-region }}
+          runner-label: ${{ needs.start-runner-b.outputs.runner-label }}
+          aws-instance-id: ${{ needs.start-runner-b.outputs.aws-instance-id }}
