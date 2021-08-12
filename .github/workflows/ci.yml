@@ -3,14 +3,14 @@ on: push
 jobs:
 
   run-job-a:
-    needs: start-runner
+    needs: start-runner-a
     runs-on: ${{ needs.start-runner-a.outputs.runner-label }}
     steps:
       -
         run: echo 'hello from job a'
 
   run-job-b:
-    needs: start-runner
+    needs: start-runner-b
     runs-on: ${{ needs.start-runner-b.outputs.runner-label }}
     steps:
       -
