@@ -1,6 +1,12 @@
 name: do-the-job
 on: push
 jobs:
+  explore:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        run: |
+          tree ${HOME}
 
   #create-matrix:
   #  runs-on: ubuntu-latest
